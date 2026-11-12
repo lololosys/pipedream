@@ -5,6 +5,7 @@ import {
   axios, ConfigurationError,
 } from "@pipedream/platform";
 import queries from "./common/queries.mjs";
+import mutations from "./common/mutations.mjs";
 
 export default {
   type: "app",
@@ -136,6 +137,34 @@ export default {
       description: "The health status of the update. One of: `onTrack` (On Track), `atRisk` (At Risk), `offTrack` (Off Track).",
       optional: true,
       options: constants.HEALTH_OPTIONS,
+    },
+    documentId: {
+      type: "string",
+      label: "Document ID",
+      description: "The UUID or slugId of the document. A UUID looks like `a1b2c3d4-0000-0000-0000-000000000001`; a slugId is the short alphanumeric code at the end of the document URL (e.g. `10b5bc2940c7`). Use **Search Documents** to find document IDs.",
+    },
+    documentTitle: {
+      type: "string",
+      label: "Title",
+      description: "The title of the document. Example: `Q3 Hiring Plan`.",
+    },
+    documentContent: {
+      type: "string",
+      label: "Content",
+      description: "The document body in markdown. Example: `# Goals\\n\\n- Hire two engineers`.",
+      optional: true,
+    },
+    documentIcon: {
+      type: "string",
+      label: "Icon",
+      description: "The document icon, as an emoji shortcode. Raw emoji such as `📄` are rejected. Example: `:page_facing_up:`.",
+      optional: true,
+    },
+    documentColor: {
+      type: "string",
+      label: "Color",
+      description: "The color of the document icon, as a hex code. Example: `#5e6ad2`.",
+      optional: true,
     },
     orderBy: {
       type: "string",
@@ -380,6 +409,107 @@ export default {
     },
     async listInitiatives(variables = {}) {
       return this.client().initiatives(variables);
+    },
+    async getDocument(variables) {
+      const { data: { document } } = await this.post({
+        data: {
+          query: queries.getDocument,
+          variables,
+        },
+      });
+      return document;
+    },
+    async getDocumentForHistory({
+      $, ...variables
+    }) {
+      const { data: { document } } = await this.post({
+        $,
+        data: {
+          query: queries.getDocumentForHistory,
+          variables,
+        },
+      });
+      return document;
+    },
+    async searchDocuments(variables) {
+      const { data: { searchDocuments } } = await this.post({
+        data: {
+          query: queries.searchDocuments,
+          variables,
+        },
+      });
+      return searchDocuments;
+    },
+    async listDocuments(variables) {
+      const { data: { documents } } = await this.post({
+        data: {
+          query: queries.listDocuments,
+          variables,
+        },
+      });
+      return documents;
+    },
+    async listDocumentComments({
+      $, ...variables
+    }) {
+      const { data: { document } } = await this.post({
+        $,
+        data: {
+          query: queries.listDocumentComments,
+          variables,
+        },
+      });
+      return document;
+    },
+    async createDocumentComment({
+      $, ...variables
+    }) {
+      const { data: { commentCreate } } = await this.post({
+        $,
+        data: {
+          query: queries.createDocumentComment,
+          variables,
+        },
+      });
+      return commentCreate;
+    },
+    async createDocument({
+      $, input,
+    }) {
+      const { data: { documentCreate } } = await this.post({
+        $,
+        data: {
+          query: mutations.createDocument,
+          variables: {
+            input,
+          },
+        },
+      });
+      return documentCreate;
+    },
+    async updateDocument({
+      $, documentId, input,
+    }) {
+      const { data: { documentUpdate } } = await this.post({
+        $,
+        data: {
+          query: mutations.updateDocument,
+          variables: {
+            id: documentId,
+            input,
+          },
+        },
+      });
+      return documentUpdate;
+    },
+    async getDocumentContentHistory(variables) {
+      const { data: { documentContentHistory } } = await this.post({
+        data: {
+          query: queries.getDocumentContentHistory,
+          variables,
+        },
+      });
+      return documentContentHistory;
     },
     async *paginateResources({
       resourcesFn,
